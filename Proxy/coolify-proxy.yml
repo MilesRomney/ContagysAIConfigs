@@ -1,0 +1,60 @@
+http:
+  routers:
+    vomsai-supabase-http:
+      middlewares:
+        - redirect-to-https
+      entryPoints:
+        - http
+      service: vomsai-supabase
+      rule: Host(`supabase.vomsai.com`)
+    vomsai-supabase-https:
+      entryPoints:
+        - https
+      service: vomsai-supabase
+      rule: Host(`supabase.vomsai.com`)
+      tls:
+        certresolver: letsencrypt
+    contagysai-payload-http:
+      middlewares:
+        - redirect-to-https
+      entryPoints:
+        - http
+      service: contagysai-payload
+      rule: Host(`beta.ask3po.ai`)
+    contagysai-payload-https:
+      entryPoints:
+        - https
+      service: contagysai-payload
+      rule: Host(`beta.ask3po.ai`)
+      tls:
+        certresolver: letsencrypt
+    contagysai-litellm-http:
+      middlewares:
+        - redirect-to-https
+      entryPoints:
+        - http
+      service: contagysai-litellm
+      rule: Host(`llm.contagys.ai`)
+    contagysai-litellm-https:
+      entryPoints:
+        - https
+      service: contagysai-litellm
+      rule: Host(`llm.contagys.ai`)
+      tls:
+        certresolver: letsencrypt
+  services:
+    vomsai-supabase:
+      loadBalancer:
+        servers:
+          -
+            url: 'http://fountainone:8000'
+    contagysai-payload:
+      loadBalancer:
+        servers:
+          -
+            url: 'http://fountainone:3000'
+    contagysai-litellm:
+      loadBalancer:
+        servers:
+          -
+            url: 'http://fountainone:4000'

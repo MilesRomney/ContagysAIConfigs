@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  app:
+    image: 'theci/contagysai:main'
+    container_name: contagysai-payload
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      DATABASE_URI: '${DATABASE_URI:-postgres://user:password@postgres:5432/contagysai}'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - '-e'
+        - "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error()})"
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+networks:
+  default:
+    name: '${DOCKER_NETWORK_NAME:-fountain-one-vomsai}'
