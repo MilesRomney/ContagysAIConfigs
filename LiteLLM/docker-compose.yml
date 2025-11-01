@@ -17,6 +17,7 @@ services:
       - 'UI_PASSWORD=${SERVICE_PASSWORD_UI}'
       - 'DATABASE_URL=${DATABASE_URL}'
       - 'STORE_MODEL_IN_DB=true'
+      - 'STORE_PROMPTS_IN_SPEND_LOGS=true'
       - 'REDIS_HOST=${REDIS_HOST:-redis}'
       - 'REDIS_PORT=${REDIS_PORT:-6379}'
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
