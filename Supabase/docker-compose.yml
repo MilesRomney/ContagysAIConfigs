@@ -9,7 +9,7 @@ services:
         condition: service_healthy
     environment:
       - SERVICE_URL_SUPABASEKONG_8000
-      - 'KONG_PORT_MAPS=443:8000'
+      - 'KONG_PORT_MAPS=8000:8000'
       - 'JWT_SECRET=${SERVICE_PASSWORD_JWT}'
       - KONG_DATABASE=off
       - KONG_DECLARATIVE_CONFIG=/home/kong/kong.yml
@@ -60,6 +60,8 @@ services:
       - 'OPENAI_API_KEY=${OPENAI_API_KEY}'
   supabase-db:
     image: 'supabase/postgres:15.8.1.048'
+    ports:
+      - '5432:5432'
     healthcheck:
       test: 'pg_isready -U postgres -h 127.0.0.1'
       interval: 5s

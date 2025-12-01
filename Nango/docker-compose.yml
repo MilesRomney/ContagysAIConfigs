@@ -1,0 +1,66 @@
+version: '3.9'
+services:
+    nango-server:
+        image: nangohq/nango-server:hosted
+        container_name: nango-server
+        extra_hosts:
+          - 'host.docker.internal:host-gateway'
+        environment:
+            - NANGO_ENCRYPTION_KEY
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@host.docker.internal:5432/postgres?options=-c%20search_path%3Dcontagysai}
+            - SERVER_PORT
+            - CSP_REPORT_ONLY=true
+            - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
+            - NANGO_PUBLIC_SERVER_URL=${NANGO_PUBLIC_SERVER_URL:-http://localhost:3000}
+            - FLAG_AUTH_ENABLED
+            - NANGO_DASHBOARD_USERNAME
+            - NANGO_DASHBOARD_PASSWORD
+            - LOG_LEVEL=${LOG_LEVEL:-info}
+            - NANGO_SERVER_WEBSOCKETS_PATH
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-true}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER
+            - NANGO_LOGS_ES_PWD
+            - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
+        restart: always
+        ports:
+            - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
+            - '${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}'
+        depends_on:
+            - nango-redis
+            - nango-elasticsearch
+        networks:
+            - nango
+
+    nango-redis:
+        image: redis:7.2.4
+        container_name: nango-redis
+        ports:
+            - '6379:6379'
+        networks:
+            - nango
+
+    nango-elasticsearch:
+        image: elasticsearch:8.13.0
+        container_name: nango-elasticsearch
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - elasticsearch-data1:/usr/share/elasticsearch/data
+        ports:
+            - 9500:9200
+            - 9600:9300
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
+        networks:
+            - nango
+
+networks:
+    nango:
+
+volumes:
+    elasticsearch-data1:
+        driver: local
