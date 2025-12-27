@@ -1,14 +1,17 @@
 version: '3.8'
 services:
-  app:
+  web:
     image: 'theci/contagysai:main'
-    container_name: contagysai-payload
+    container_name: contagysai-web
     ports:
       - '3000:3000'
     env_file:
       - .env
     environment:
       DATABASE_URI: '${DATABASE_URI:-postgres://user:password@postgres:5432/contagysai}'
+      REDIS_URL: '${REDIS_URL:-redis://localhost:6379}'
+      # Disable background workers in the web process
+      ENABLE_WORKER: "false"
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     restart: unless-stopped
@@ -22,6 +25,22 @@ services:
       timeout: 3s
       retries: 3
       start_period: 30s
+
+  worker:
+    image: 'theci/contagysai:main'
+    container_name: contagysai-worker
+    command: ["npx", "tsx", "src/workers/index.ts"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URI: '${DATABASE_URI:-postgres://user:password@postgres:5432/contagysai}'
+      REDIS_URL: '${REDIS_URL:-redis://localhost:6379}'
+      # Ensure workers are enabled in the worker process
+      ENABLE_WORKER: "true"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
+
 networks:
   default:
     name: '${DOCKER_NETWORK_NAME:-fountain-one-vomsai}'
